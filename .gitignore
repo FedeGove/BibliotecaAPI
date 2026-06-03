@@ -1,0 +1,11 @@
+# Rider
+.idea/
+
+# .NET
+bin/
+obj/
+*.user
+
+# Configurazione sensibile
+appsettings.json
+appsettings.Development.json

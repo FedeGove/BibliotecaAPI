@@ -140,3 +140,4 @@
 /Users/fede/RiderProjects/BibliotecaAPI/BibliotecaAPI/bin/Debug/net10.0/Microsoft.IdentityModel.Tokens.dll
 /Users/fede/RiderProjects/BibliotecaAPI/BibliotecaAPI/bin/Debug/net10.0/System.IdentityModel.Tokens.Jwt.dll
 /Users/fede/RiderProjects/BibliotecaAPI/BibliotecaAPI/bin/Debug/net10.0/BCrypt-Net-Next.dll
+/Users/fede/RiderProjects/BibliotecaAPI/BibliotecaAPI/obj/Debug/net10.0/BibliotecaAPI.sourcelink.json
