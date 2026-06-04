@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BibliotecaAPI.Controllers;
-[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 
@@ -19,6 +18,7 @@ public class LibriController : ControllerBase
     }
     
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<List<Libro>>> GetLibri()
     {
         return await _context.Libri.ToListAsync();
@@ -35,6 +35,7 @@ public class LibriController : ControllerBase
     
     
     [HttpPost]
+    [Authorize(Roles = "admin")]
     public async Task<ActionResult<Libro>> CreateLibro(Libro libro)
     {
         _context.Libri.Add(libro);
@@ -43,6 +44,7 @@ public class LibriController : ControllerBase
     }
 
     [HttpPost("{libroId}/prestito/{utenteId}")]
+    [Authorize]
     public async Task<ActionResult<Libro>> ImpostaPrestitoLibro(int libroId, int utenteId)
     {
         var libro = await _context.Libri.FindAsync(libroId);
@@ -61,6 +63,7 @@ public class LibriController : ControllerBase
     }
 
     [HttpPost("{libroId}/restituzione")]
+    [Authorize]
     public async Task<ActionResult<Libro>> ImpostaRestituzioneLibro(int libroId)
     {
         var libro = await _context.Libri.FindAsync(libroId);
@@ -81,6 +84,7 @@ public class LibriController : ControllerBase
     
     
     [HttpDelete("{id}")]
+    [Authorize(Roles = "admin")]
     public async Task<ActionResult> DeleteLibro(int id)
     {
         var libro = await _context.Libri.FindAsync(id);

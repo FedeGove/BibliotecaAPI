@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 using BibliotecaAPI.Data;
 using BibliotecaAPI.Models;
@@ -34,7 +35,8 @@ public class AuthController : ControllerBase
         var utente = new UtenteAuth
         {
             Username = request.Username,
-            PasswordHash = hash
+            PasswordHash = hash,
+            Ruolo = request.Ruolo ?? "utente"
         };
 
         _context.UtentiAuth.Add(utente);
@@ -54,10 +56,17 @@ public class AuthController : ControllerBase
         
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.Name, utente.Username),
+            new Claim(ClaimTypes.Role, utente.Ruolo)
+        };
 
         var token = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
+            claims: claims,
             expires: DateTime.UtcNow.AddHours(1),
             signingCredentials: creds
         );
