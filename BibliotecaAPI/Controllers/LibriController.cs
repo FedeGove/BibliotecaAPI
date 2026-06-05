@@ -48,15 +48,15 @@ public class LibriController : ControllerBase
     public async Task<ActionResult<Libro>> ImpostaPrestitoLibro(int libroId, int utenteId)
     {
         var libro = await _context.Libri.FindAsync(libroId);
-        var utente = await _context.Utenti.FindAsync(utenteId);
-        
+        var utente = await _context.UtentiAuth.FindAsync(utenteId);
+    
         if (libro == null || utente == null) return NotFound();
-        if (libro.Disponibile == false) return BadRequest("Libro non disponibile");
-        
+        if (!libro.Disponibile) return BadRequest("Libro non disponibile");
+    
         libro.Disponibile = false;
         libro.UtenteId = utenteId;
         libro.DataRestituzione = DateTime.UtcNow.AddDays(30);
-        
+    
         _context.Libri.Update(libro);
         await _context.SaveChangesAsync();
         return libro;
