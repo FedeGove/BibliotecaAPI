@@ -60,7 +60,8 @@ public class AuthController : ControllerBase
         var claims = new[]
         {
             new Claim(ClaimTypes.Name, utente.Username),
-            new Claim(ClaimTypes.Role, utente.Ruolo)
+            new Claim(ClaimTypes.Role, utente.Ruolo),
+            new Claim(ClaimTypes.NameIdentifier, utente.Id.ToString())
         };
 
         var token = new JwtSecurityToken(
