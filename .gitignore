@@ -1,5 +1,6 @@
 # Rider
 .idea/
+*.DotSettings.user
 
 # .NET
 bin/
