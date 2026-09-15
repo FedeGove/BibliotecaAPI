@@ -43,22 +43,32 @@ public class LibriController : ControllerBase
         return libro;
     }
 
-    [HttpPost("{libroId}/prestito/{utenteId}")]
+    [HttpPost("{libroId}/prestito")]
     [Authorize]
-    public async Task<ActionResult<Libro>> ImpostaPrestitoLibro(int libroId, int utenteId)
+    public async Task<ActionResult<Libro>> ImpostaPrestitoLibro(int libroId)
     {
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+        if (userIdClaim == null)
+            return Unauthorized();
+
+        var utenteId = int.Parse(userIdClaim.Value);
+
         var libro = await _context.Libri.FindAsync(libroId);
-        var utente = await _context.UtentiAuth.FindAsync(utenteId);
-    
-        if (libro == null || utente == null) return NotFound();
-        if (!libro.Disponibile) return BadRequest("Libro non disponibile");
-    
+        var utente = await _context.Utenti.FindAsync(utenteId);
+
+        if (libro == null || utente == null)
+            return NotFound();
+
+        if (!libro.Disponibile)
+            return BadRequest("Libro non disponibile");
+
         libro.Disponibile = false;
         libro.UtenteId = utenteId;
         libro.DataRestituzione = DateTime.UtcNow.AddDays(30);
-    
-        _context.Libri.Update(libro);
+
         await _context.SaveChangesAsync();
+
         return libro;
     }
 
@@ -66,18 +76,30 @@ public class LibriController : ControllerBase
     [Authorize]
     public async Task<ActionResult<Libro>> ImpostaRestituzioneLibro(int libroId)
     {
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+        if (userIdClaim == null)
+            return Unauthorized();
+
+        var utenteId = int.Parse(userIdClaim.Value);
+
         var libro = await _context.Libri.FindAsync(libroId);
-        if (libro == null) return NotFound();
-        
-        var utente = await _context.Utenti.FindAsync(libro.UtenteId);
-        if (utente == null) return NotFound();
+
+        if (libro == null)
+            return NotFound();
+
+        if (libro.Disponibile)
+            return BadRequest("Il libro non risulta in prestito");
+    
+        if (libro.UtenteId != utenteId)
+            return Forbid();
 
         libro.Disponibile = true;
         libro.UtenteId = null;
         libro.DataRestituzione = null;
-        
-        _context.Libri.Update(libro);
+
         await _context.SaveChangesAsync();
+
         return libro;
     }
 

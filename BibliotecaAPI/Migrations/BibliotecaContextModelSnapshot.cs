@@ -67,23 +67,6 @@ namespace BibliotecaAPI.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Nome")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Utenti");
-                });
-
-            modelBuilder.Entity("BibliotecaAPI.Models.UtenteAuth", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
@@ -98,7 +81,7 @@ namespace BibliotecaAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("UtenteAuth", (string)null);
+                    b.ToTable("Utenti");
                 });
 #pragma warning restore 612, 618
         }

@@ -25,21 +25,21 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult> Register([FromBody] LoginRequest request)
     {
-        var esistente = await _context.UtentiAuth.
+        var esistente = await _context.Utenti.
             FirstOrDefaultAsync(u => u.Username == request.Username);
         
         if (esistente != null) return BadRequest("Username già esistente");
         
         var hash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
-        var utente = new UtenteAuth
+        var utente = new Utente
         {
             Username = request.Username,
             PasswordHash = hash,
-            Ruolo = request.Ruolo ?? "utente"
+            Ruolo = "Utente"
         };
 
-        _context.UtentiAuth.Add(utente);
+        _context.Utenti.Add(utente);
         await _context.SaveChangesAsync();
         return Ok(utente);
     }
@@ -47,14 +47,23 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult> Login([FromBody] LoginRequest request)
     {
-        var utente = await _context.UtentiAuth.
+        var utente = await _context.Utenti.
             FirstOrDefaultAsync(u => u.Username == request.Username);
         
         if (utente == null) return Unauthorized("L'utente non esiste");
         
         if (!BCrypt.Net.BCrypt.Verify(request.Password, utente.PasswordHash)) return Unauthorized("Password errata");
         
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        var jwtKey = _configuration["Jwt:Key"];
+
+        if (string.IsNullOrWhiteSpace(jwtKey))
+        {
+            return StatusCode(500, "JWT key non configurata.");
+        }
+
+        var key = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(jwtKey)
+        );
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         
         var claims = new[]

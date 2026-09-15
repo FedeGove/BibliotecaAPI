@@ -1,5 +1,6 @@
 using System.Text;
 using BibliotecaAPI.Data;
+using BibliotecaAPI.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -11,6 +12,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 builder.Services.AddControllers(); // dopo AddOpenApi()
+
+var jwtKey = builder.Configuration["Jwt:Key"];
+
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    throw new InvalidOperationException("Jwt:Key non configurata.");
+}
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -24,7 +32,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                Encoding.UTF8.GetBytes(jwtKey)
+                )
         };
     });
 
@@ -48,8 +57,20 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<BibliotecaContext>();
-    db.Database.Migrate();
+    var context = scope.ServiceProvider.GetRequiredService<BibliotecaContext>();
+
+    if (!context.Utenti.Any(u => u.Ruolo == "admin"))
+    {
+        var admin = new Utente
+        {
+            Username = "admin",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+            Ruolo = "admin"
+        };
+
+        context.Utenti.Add(admin);
+        context.SaveChanges();
+    }
 }
 
 // Configure the HTTP request pipeline.
